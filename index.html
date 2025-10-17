@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说写作助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #bdc3c7;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            padding: 20px;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .editor-container {
+            background: #fafafa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .ai-panel {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #e3f2fd;
+        }
+
+        .upload-area.drag-over {
+            background: #e3f2fd !important;
+            border-color: #2980b9 !important;
+        }
+
+        .chapter-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .chapter-item {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chapter-item:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+        }
+
+        .chapter-item.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-info {
+            background: #16a085;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        .editor {
+            width: 100%;
+            height: 400px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            resize: none;
+            background: white;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .editor:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: inset 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .ai-input {
+            width: 100%;
+            height: 80px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .ai-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .ai-messages {
+            height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .ai-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .ai-message.user {
+            background: #e3f2fd;
+            margin-left: 20%;
+        }
+
+        .ai-message.ai {
+            background: #e8f5e9;
+            margin-right: 20%;
+        }
+
+        .export-panel {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #27ae60;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+
+        .status-bar {
+            background: #ecf0f1;
+            padding: 10px 20px;
+            border-top: 1px solid #bdc3c7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📖 小说写作助手</h1>
+            <p>上传、编辑、AI辅助、导出 - 一站式写作平台</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <h3 class="section-title">📁 章节管理</h3>
+                
+                <div class="upload-area" id="uploadArea" 
+                     onclick="document.getElementById('fileInput').click()"
+                     ondrop="handleDrop(event)" 
+                     ondragover="handleDragOver(event)" 
+                     ondragleave="handleDragLeave(event)">
+                    <p>📁 点击上传 .docx 文件</p>
+                    <p style="font-size: 0.8rem; color: #7f8c8d;">或拖拽文件到此处</p>
+                </div>
+                <input type="file" id="fileInput" accept=".docx" style="display: none;" onchange="handleFileUpload(event)">
+                
+                <ul class="chapter-list" id="chapterList">
+                    <!-- 章节列表将在这里动态生成 -->
+                </ul>
+                
+                <button class="btn btn-success" onclick="addNewChapter()">+ 新建章节</button>
+                
+                <div style="margin-top: 20px;">
+                    <h3 class="section-title">💾 保存管理</h3>
+                    <button class="btn btn-primary" onclick="saveCurrentChapter()">💾 保存章节</button>
+                    <button class="btn btn-warning" onclick="loadFromStorage()">🔄 恢复内容</button>
+                </div>
+            </div>
+
+            <!-- 主编辑区 -->
+            <div class="editor-container">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-danger" onclick="clearEditor()">🗑️ 清空</button>
+                </div>
+                
+                <textarea 
+                    id="editor" 
+                    class="editor" 
+                    placeholder="在这里开始创作您的故事..."
+                    oninput="autoSave()"
+                ></textarea>
+                
+                <div class="status-bar">
+                    <span>字数: <span id="wordCount">0</span> | 字符: <span id="charCount">0</span></span>
+                    <span>章节: <span id="currentChapter">未选择</span></span>
+                </div>
+            </div>
+
+            <!-- AI 辅助面板 -->
+<div class="ai-panel">
+    <h3 class="section-title">🤖 AI 写作助手</h3>
+    <div style="margin-bottom: 15px;"> <!-- AI API 配置 -->
+        <label for="apiKey">API Key:</label>
+        <input type="text" id="apiKey" placeholder="输入您的 AI API Key" style="width: 100%; padding: 8px; margin-top: 5px;">
+        <button class="btn btn-primary" onclick="saveApiKey()" style="margin-top: 10px;">保存 API Key</button>
+    </div>
+    <textarea 
+        id="aiInput" 
+        class="ai-input" 
+        placeholder="输入您的问题或选择上方按钮快速调用 AI 功能..."></textarea>
+    <button class="btn btn-primary" onclick="sendToAI()" style="width: 100%;">🚀 发送</button>
+    
+    <div class="ai-messages" id="aiMessages">
+        <!-- AI 消息将在这里显示 -->
+        <div class="ai-message ai">
+            您好！我是您的 AI 写作助手，可以帮助您检查文本一致性、重写句子或扩展段落。
+        </div>
+    </div>
+    
+    <div class="export-panel">
+        <h3 class="section-title">📦 导出功能</h3>
+        <button class="btn btn-success" onclick="exportCurrentChapter()">📄 导出当前章节 (.txt)</button>
+        <button class="btn btn-success" onclick="exportCurrentChapterDocx()">📄 导出当前章节 (.docx)</button>
+        <button class="btn btn-info" onclick="exportWholeNovel()">📚 导出整本小说 (.txt)</button>
+        <button class="btn btn-info" onclick="exportWholeNovelDocx()">📚 导出整本小说 (.docx)</button>
+    </div>
+</div>
+</div>
+</div>
+
+    <div class="notification" id="notification">
+        操作成功！
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.5.1/mammoth.browser.min.js"></script>
+    <script>
+        // 全局状态
+        let chapters = JSON.parse(localStorage.getItem('novelChapters')) || [
+            { id: 1, title: '第一章：序章', content: '这里开始您的故事...' }
+        ];
+        let currentChapterId = 1;
+
+        // 初始化
+        function initApp() {
+            loadChapters();
+            loadCurrentChapter();
+            updateWordCount();
+            
+            // 检查是否有未保存的内容
+            if (localStorage.getItem('unsavedContent')) {
+                showNotification('检测到上次未保存的章节内容，请使用"恢复内容"按钮获取');
+            }
+        }
+
+        // 文件上传处理
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.name.toLowerCase().endsWith('.docx')) {
+                alert('请上传 .docx 格式的文件！');
+                return;
+            }
+            
+            // 使用mammoth.js解析docx文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                mammoth.extractRawText({ arrayBuffer: e.target.result })
+                    .then(function(result) {
+                        const content = result.value;
+                        
+                        const newChapter = {
+                            id: Date.now(),
+                            title: file.name.replace('.docx', ''),
+                            content: content
+                        };
+                        
+                        chapters.push(newChapter);
+                        saveToLocalStorage();
+                        loadChapters();
+                        selectChapter(newChapter.id);
+                        
+                        showNotification('文件上传成功！');
+                    })
+                    .done();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 拖拽上传功能
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('uploadArea').classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('uploadArea').classList.remove('drag-over');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('uploadArea').classList.remove('drag-over');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                // 触发文件上传
+                const fileInput = document.getElementById('fileInput');
+                fileInput.files = files;
+                handleFileUpload({ target: { files: [file] } });
+            }
+        }
+
+        // 章节管理
+        function loadChapters() {
+            const chapterList = document.getElementById('chapterList');
+            chapterList.innerHTML = '';
+            
+            chapters.forEach(chapter => {
+                const li = document.createElement('li');
+                li.className = 'chapter-item';
+                if (chapter.id === currentChapterId) {
+                    li.classList.add('active');
+                }
+                
+                li.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span onclick="selectChapter(${chapter.id})">${chapter.title}</span>
+                        <button class="btn btn-danger" onclick="event.stopPropagation(); deleteChapter(${chapter.id})" style="padding: 2px 8px; font-size: 0.7rem;">删除</button>
+                    </div>
+                `;
+                chapterList.appendChild(li);
+            });
+        }
+
+        function selectChapter(id) {
+            saveCurrentChapter();
+            currentChapterId = id;
+            loadCurrentChapter();
+            loadChapters(); // 重新高亮当前章节
+        }
+
+        function addNewChapter() {
+            const newId = Date.now();
+            const newChapter = {
+                id: newId,
+                title: `第${chapters.length + 1}章：新章节`,
+                content: ''
+            };
+            chapters.push(newChapter);
+            saveToLocalStorage();
+            loadChapters();
+            selectChapter(newId);
+        }
+
+        function deleteChapter(id) {
+            if (confirm('确定要删除这个章节吗？此操作不可撤销。')) {
+                chapters = chapters.filter(c => c.id !== id);
+                if (currentChapterId === id) {
+                    currentChapterId = chapters[0]?.id || null;
+                    if (currentChapterId) {
+                        loadCurrentChapter();
+                    } else {
+                        document.getElementById('editor').value = '';
+                        document.getElementById('currentChapter').textContent = '未选择';
+                    }
+                }
+                saveToLocalStorage();
+                loadChapters();
+            }
+        }
+
+        function loadCurrentChapter() {
+            if (!currentChapterId) return;
+            
+            const chapter = chapters.find(c => c.id === currentChapterId);
+            if (chapter) {
+                document.getElementById('editor').value = chapter.content || '';
+                document.getElementById('currentChapter').textContent = chapter.title;
+                updateWordCount();
+            }
+        }
+
+        function saveCurrentChapter() {
+            if (!currentChapterId) return;
+            
+            const content = document.getElementById('editor').value;
+            const chapter = chapters.find(c => c.id === currentChapterId);
+            if (chapter) {
+                chapter.content = content;
+                saveToLocalStorage();
+                localStorage.setItem('unsavedContent', content); // 备份内容
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('novelChapters', JSON.stringify(chapters));
+        }
+
+        function loadFromStorage() {
+            const savedContent = localStorage.getItem('unsavedContent');
+            if (savedContent) {
+                if (confirm('发现上次未保存的内容，是否恢复？')) {
+                    document.getElementById('editor').value = savedContent;
+                    updateWordCount();
+                    showNotification('内容已恢复！');
+                    // 清除备份
+                    localStorage.removeItem('unsavedContent');
+                }
+            } else {
+                showNotification('没有找到未保存的内容');
+            }
+        }
+
+        // 编辑器功能
+        function autoSave() {
+            saveCurrentChapter();
+            updateWordCount();
+        }
+
+        function updateWordCount() {
+            const content = document.getElementById('editor').value;
+            const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+            const charCount = content.length;
+            
+            document.getElementById('wordCount').textContent = wordCount;
+            document.getElementById('charCount').textContent = charCount;
+        }
+
+        function clearEditor() {
+            if (confirm('确定要清空当前章节内容吗？')) {
+                document.getElementById('editor').value = '';
+                updateWordCount();
+            }
+        }
+
+        // AI 辅助功能
+        function sendToAI() {
+            const input = document.getElementById('aiInput').value.trim();
+            if (!input) return;
+
+            // 添加用户消息
+            addAImessage(input, 'user');
+
+            // 模拟 AI 响应
+            setTimeout(() => {
+                const aiResponse = generateAIResponse(input);
+                addAImessage(aiResponse, 'ai');
+                document.getElementById('aiInput').value = '';
+            }, 1000);
+        }
+
+        function generateAIResponse(input) {
+            // 根据输入类型生成不同响应
+            if (input.includes('矛盾') || input.includes('一致性')) {
+                return '经过分析，当前段落与前文在人物设定上存在一些不一致之处，建议统一人物外貌描述。';
+            } else if (input.includes('重写') || input.includes('替代')) {
+                return '建议将此句重写为："夜幕降临，月光如水般洒向大地，为这片寂静的森林披上了一层神秘的面纱。"';
+            } else if (input.includes('续写') || input.includes('扩展')) {
+                return '可以这样扩展："他的心情如同这秋日的落叶，飘摇不定。内心深处涌起一阵莫名的惆怅，仿佛有什么重要的东西正在悄然流逝。"';
+            } else {
+                return '这是一个很好的想法！基于您提供的内容，我建议从情感层面深入挖掘人物的内心世界，让读者更能感受到角色的情感变化。';
+            }
+        }
+
+        function addAImessage(content, type) {
+            const messagesDiv = document.getElementById('aiMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${type}`;
+            messageDiv.textContent = content;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function checkConsistency() {
+            const selectedText = getSelectedText();
+            const prompt = selectedText ? 
+                `请分析以下文字与前文是否矛盾：\n\n${selectedText}` : 
+                '请分析当前章节内容与前文是否存在逻辑矛盾或不一致之处。';
+            
+            document.getElementById('aiInput').value = prompt;
+            sendToAI();
+        }
+
+        function suggestAlternative() {
+            const selectedText = getSelectedText();
+            if (!selectedText) {
+                alert('请先选中要重写的文本！');
+                return;
+            }
+            
+            const prompt = `请重写以下文字，使语气更自然：\n\n${selectedText}`;
+            document.getElementById('aiInput').value = prompt;
+            sendToAI();
+        }
+
+        function expandParagraph() {
+            const selectedText = getSelectedText();
+            if (!selectedText) {
+                alert('请先选中要扩展的段落！');
+                return;
+            }
+            
+            const prompt = `请续写以下文字，扩展人物情绪或场景描写：\n\n${selectedText}`;
+            document.getElementById('aiInput').value = prompt;
+            sendToAI();
+        }
+
+        function getSelectedText() {
+            const editor = document.getElementById('editor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            return editor.value.substring(start, end);
+        }
+
+        // 导出功能
+        function exportCurrentChapter() {
+            if (!currentChapterId) {
+                alert('请先选择一个章节！');
+                return;
+            }
+            
+            const chapter = chapters.find(c => c.id === currentChapterId);
+            const content = `# ${chapter.title}\n\n${chapter.content}`;
+            downloadFile(content, `${chapter.title}.txt`, 'text/plain');
+        }
+
+        function exportCurrentChapterDocx() {
+            if (!currentChapterId) {
+                alert('请先选择一个章节！');
+                return;
+            }
+            
+            const chapter = chapters.find(c => c.id === currentChapterId);
+            const content = `# ${chapter.title}\n\n${chapter.content}`;
+            // 简化版，实际docx需要更复杂的处理
+            downloadFile(content, `${chapter.title}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        }
+
+        function exportWholeNovel() {
+            let content = '';
+            chapters.forEach(chapter => {
+                content += `# ${chapter.title}\n\n${chapter.content}\n\n---\n\n`;
+            });
+            downloadFile(content, '我的小说.txt', 'text/plain');
+        }
+
+        function exportWholeNovelDocx() {
+            let content = '';
+            chapters.forEach(chapter => {
+                content += `# ${chapter.title}\n\n${chapter.content}\n\n---\n\n`;
+            });
+            downloadFile(content, '我的小说.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 通知功能
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
